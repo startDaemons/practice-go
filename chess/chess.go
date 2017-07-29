@@ -1,38 +1,56 @@
 package chess
 
+import "strconv"
+import "fmt"
+import s "strings"
+import "math"
 import "errors"
+
+/*
+ a b c d e
+| | | | | |1
+|x| | | | |2
+| | |x| | |3
+| | | | | |4
+
+one axis must be 2,
+one axis must be 1
+
+*/
+
 
 // CanKnightAttack checks if two knights on specified positions can attack each other
 func CanKnightAttack(white, black string) (bool, error) {
-	// Do initial validation
-	if len(white) < 2 || len(black) < 2 {
-		return false, errors.New("args too short")
+	// validate inputs
+
+	if len(white) != 2 || len(black) != 2 {
+		return false, fmt.Errorf("Invalid coordinates: %s %s ", white, black)
 	}
 
-	// Check if pieces are on board
-	if white[0]-'a' > 7 || white[1]-'1' > 7 {
-		return false, errors.New("Invalid white position")
-	}
-	if black[0]-'a' > 7 || black[1]-'1' > 7 {
-		return false, errors.New("Invalid black position")
+	if s.ToLower(white) == s.ToLower(black) {
+		return false, fmt.Errorf("Invalid coordinates: cannot be equal %s %s ", white, black)
 	}
 
-	// Calculate distance between knights in each axis
-	d0 := abs(int(white[0]) - int(black[0]))
-	d1 := abs(int(white[1]) - int(black[1]))
+	wcol, wrow := parseCoordinates(white)	
+	bcol, brow := parseCoordinates(black)
 
-	// If the difference is 1 on one axis and 2 on the other we're happy
-	if (d0 == 1 && d1 == 2) || (d0 == 2 && d1 == 1) {
-		return true, nil
-	} else if d0 == 0 && d1 == 0 {
-		return false, errors.New("You can't stack 'em you silly.")
+	if wcol > 8 || bcol > 8 || wrow > 8 || brow > 8 || wcol < 1 || bcol < 1 || wrow < 1 || brow < 1 {
+		return false, errors.New("Invalid coordinates: out of range")
 	}
-	return false, nil
+
+	colDif := math.Abs(float64(wcol - bcol))
+	rowDif := math.Abs(float64(wrow - brow))
+
+	// test if can attack
+
+	return (colDif == 2 && rowDif == 1) || (colDif == 1 && rowDif == 2), nil
 }
 
-func abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
+func parseCoordinates(input string) (int, int) {
+	coords := s.Split(input, "")
+
+	col, _ := strconv.ParseInt(coords[0], 25, 0)
+	row, _ := strconv.Atoi(coords[1])
+	
+	return int(col - 9), row
 }
