@@ -1,15 +1,23 @@
 package floyd
 
-// Triangle makes a Floyd's triangle matrix with rows count.
+//Triangle Output flyd's triangle with given number of rows .
 func Triangle(rows int) [][]int {
-	triangle := make([][]int, rows)
-	var i int
-	for r := 0; r < rows; r++ {
-		triangle[r] = make([]int, r+1)
-		for c := 0; c < r+1; c++ {
+
+	output := make([][]int, rows)
+
+	//the counter
+	i := 1
+
+	// iterate through rows
+	for row := 0; row < rows; row++ {
+		output[row] = make([]int, row + 1)
+
+		// iterate columns
+		for col := 0; col <= row; col++ {
+			output[row][col] = i
 			i++
-			triangle[r][c] = i
 		}
 	}
-	return triangle
+
+	return output
 }
