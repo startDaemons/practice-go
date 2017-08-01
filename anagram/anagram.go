@@ -1,51 +1,76 @@
 package anagram
 
-import "strings"
+import (
+	s "strings"
+)
 
-func FindAnagrams(dictionary []string, word string) (result []string) {
-	word = normalize(word)
-	if len(word) == 0 {
-		return nil
+func FindAnagrams(dictionary []string, _word string) []string {
+
+	result := make([]string, 0)
+
+	filterWord := func (word string) string {return s.ToLower(s.Trim(word, " "))}
+
+	word := filterWord(_word)
+
+	// check
+	if word == "" {
+		return result 
 	}
 
-	charDir := parseCharDic(word)
-	for _, value := range dictionary {
-		ww := normalize(value)
-		// ignore exact match or empty word(not anagram)
-		if ww == word || len(ww) == 0 {
+	// compare occurances of letters in word with those in each dictionary word.
+	// If the count of each letter matches and the number of unique letters match
+	// then the words are anagrams of each other.
+
+	wOccurances := getOccurances(word)
+	
+	for _, _dword := range dictionary {
+
+		dword := filterWord(_dword)
+
+		if dword == "" || word == dword {
 			continue
 		}
 
-		if compareDics(charDir, parseCharDic(ww)) {
-			result = append(result, value)
-		}
-	}
-	return result
-}
+		dOccurances := getOccurances(dword)
 
-func normalize(s string) string {
-	return strings.Replace(strings.ToLower(s), " ", "", -1)
-}
+		if !occurancesMatch(wOccurances, dOccurances) {
+			continue
+		}	
 
-func parseCharDic(word string) (result map[rune]int) {
-	result = make(map[rune]int)
-	for _, char := range word {
-		result[char] = result[char] + 1
+		result = append(result, _dword)
 	}
 
 	return result
 }
 
-func compareDics(dic1, dic2 map[rune]int) bool {
-	if len(dic1) != len(dic2) {
+func occurancesMatch(wOccurances map[string]int, dOccurances map[string]int) bool {
+	if len(wOccurances) != len(dOccurances) {
 		return false
 	}
 
-	for key, value := range dic1 {
-		if dic2[key] != value {
+	for char, count := range wOccurances {
+		if count != dOccurances[char] {
 			return false
 		}
 	}
 
 	return true
+}
+
+// Retuns a map where the keys are unique letters in the word and 
+// values are the number of occurances of that letter in the word  
+func getOccurances(word string) map[string]int {
+	occurances := make(map[string]int)
+
+	for _, _char := range word {
+		char := s.ToUpper(string(_char)) // this seems to filter out non alpha characters- it's a bit sketchy
+		
+		if string(char) == "" || occurances[string(char)] != 0 || string(char) == " " {
+			continue
+		}
+
+		occurances[string(char)] = s.Count(s.ToUpper(word), string(char))
+	}
+
+	return occurances
 }
